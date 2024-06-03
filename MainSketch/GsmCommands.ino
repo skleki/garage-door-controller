@@ -1,5 +1,4 @@
 #ifdef GSM_MODEM
-#define GSM_RESET_PIN 12
 
 #include <functional> 
 
@@ -91,7 +90,9 @@ void SendGsmCommand(String command);
 void ResetGsmModem();
 
 
-
+#define SIM800L_RX_PIN 16
+#define SIM800L_TX_PIN 17
+#define SIM800L_RESET_PIN 4
 
 
 // ****************************************************************************************
@@ -114,21 +115,19 @@ void GsmCommands_Initialise(TParserCallbackNotification parserCallbackNotificati
   _receivedSignalStrengthFunction = receivedSignalStrengthFunction;
 
   ResetPinLow();
-  pinMode(GSM_RESET_PIN, OUTPUT);
+  pinMode(SIM800L_RESET_PIN, OUTPUT);
 
   ResetGsmModem();
-  #define RXD2 16
-  #define TXD2 17
-  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  Serial2.begin(9600, SERIAL_8N1, SIM800L_RX_PIN, SIM800L_TX_PIN);
 }
 
 void ResetPinHigh()
 {
-  digitalWrite(GSM_RESET_PIN, HIGH);
+  digitalWrite(SIM800L_RESET_PIN, HIGH);
 }
 void ResetPinLow()
 {
-  digitalWrite(GSM_RESET_PIN, LOW);
+  digitalWrite(SIM800L_RESET_PIN, LOW);
 }
 void ResetGsmModem()
 {

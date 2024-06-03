@@ -6,8 +6,7 @@
 #define ESP32_WROOM_32_30PIN  // "ESP32 Dev Module"
 // #define ESP32_HelTex_WiFi_Kit_36pin
 
-#define GSM_THERMOSTAT
-#define OLED_DISPLAY
+#define DOOR_CONTROL
 
 #define GSM_MODEM
 #define ENABLE_WDT
@@ -21,15 +20,17 @@
 	#define DS18x20_pin2 23
 #elif defined (ESP32_HelTex_WiFi_Kit_36pin)   // I am using this with the first GSM Thermostat project
 	#define SIGNAL_LED_PIN 25
-	#define RS232_PROTOCOL_PIN 36
-	#define DS18x20_pin1 32
-	#define DS18x20_pin2 33
-	#define EWDT_RESET_PIN 26
-	#define RELAY_ACTIVE_LOW_PIN 34
-	#define RELAY_ACTIVE_HIGH_PIN 35
-	#define SIM800L_TX_PIN 14
-	#define SIM800L_RX_PIN 27
-	#define SIM800L_RESET_PIN 12
+	#define RS232_PROTOCOL_PIN 23
+	#define DS18x20_pin1 21
+	#define EWDT_RESET_PIN 22
+  #define SIM800L_RX_PIN 16
+  #define SIM800L_TX_PIN 17
+	#define SIM800L_RESET_PIN 4
+  #define DOOR_CLOSE_PIN_ACTIVE_LOW 15
+  #define DOOR_CLOSE_PIN_ACTIVE_HIGH 19
+  #define DOOR_OPEN_PIN_ACTIVE_LOW 18
+  #define DOOR_OPEN_PIN_ACTIVE_HIGH 5
+  #define DOOR_CLOSED_SENSOR_PIN 12
 #endif
 
 // *****************************************************************************************
@@ -76,19 +77,21 @@ extern inline void DS18x20_Timer1s_Handler();
 // ******************          S E T U P        ********************************************
 void setup() 
 {
-	pinMode(RS232_PROTOCOL_PIN, INPUT_PULLUP);
-	delay(50);
-
-	Signal_LEDs_Initialise();
-
-	Serialbegin(115200);
-	ForceSerialprintln("Starting Arduino !!!");
-
-	Timer1_Initialize();
-
-	DS18x20_Init(false);
-
+  pinMode(RS232_PROTOCOL_PIN, INPUT_PULLUP);
+  delay(50);
+  
+  Signal_LEDs_Initialise();
+  
+  Serialbegin(115200);
+  ForceSerialprintln("Starting Arduino !!!");
+  
+  Timer1_Initialize();
+  
+  DS18x20_Init(false);
+  
   WDT_Initialise();
+  
+  DoorControl_Initialise();
   GsmLogic_Initialise();
   
   Serialprintln("setup() FINISHED.\n");
@@ -107,6 +110,8 @@ void loop()
 
 	GsmLogic_loop();
 	yield();
+  DoorControl_Loop();
+  yield();
 }
 // *****************************************************************************************
 // *****************************************************************************************
@@ -118,7 +123,7 @@ void loop()
 // ****************           T I M E R    H A N D L E R S        **************************
 inline void Timer1_1msHandler(void)
 {
-//  HeaterControl_1msHandler();
+  DoorControl_1msHandler();
 }
 
 inline void Timer1_10msHandler(void)
@@ -130,14 +135,14 @@ inline void Timer1_100msHandler(void)
 {
   DS18x20_Timer100ms_Handler();
   GsmLogic_100msHandler();
-//  HeaterControl_100msHandler();
+  DoorControl_100msHandler();
 }
 
 inline void Timer1_1000msHandler(void)
 {
   DS18x20_Timer1s_Handler();
   GsmLogic_1sHandler();
-//  HeaterControl_1000msHandler();
+  DoorControl_1000msHandler();
 }
 
 inline void ResetUno(void)

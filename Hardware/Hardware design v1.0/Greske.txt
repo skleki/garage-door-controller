@@ -1,0 +1,19 @@
+Za UP control, relej konektor nijepovezan:
+ + treba da se donji pin za relej poveze sa pinom 2 na CNY17-3
+ + treba da se doda zica
+ 
+ 
+GND za GSM modul nije povezan
+ + crna zica sa pina 4 na GSM modulu nije zalemljena na opsti GND
+ 
+CLR pin na 4060 nije povezan sa ESP32-pin D22
+ + treba da se doda zica da se poveze
+ 
+DATA pinovi za DS18B20 treba da se medjusobno povezu
+ + samo pinovi izmedju konektora nisu povezani, ostalo je sredjeno
+ 
+Serial port pinovi za GSMmodul mora da se prevezu:
+ - trenutni pin 16 je RXD2 i on treba da ide na SIM_TXD
+ - trenutni pin 17 je TXD2 i on treba da ide na SIM_RXD
+ - trenutni pinovi 19 i 21 treba da se prebace na mesta koja su oslobodjena
+ - source treba da se promeni
