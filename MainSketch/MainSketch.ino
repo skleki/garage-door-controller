@@ -4,7 +4,6 @@
 // #define ESP8266
 // #define ESP32   // this is already defined when you select ESP32 board
 #define ESP32_WROOM_32_30PIN  // "ESP32 Dev Module"
-// #define ESP32_HelTex_WiFi_Kit_36pin
 
 #define DOOR_CONTROL
 
@@ -13,25 +12,19 @@
 #define UNO_BOARD_LEDS
 
 
-#if defined (ESP32_WROOM_32_30PIN)
-	#define SIGNAL_LED_PIN 2
-	#define RS232_PROTOCOL_PIN 23
-	#define DS18x20_pin1 22
-	#define DS18x20_pin2 23
-#elif defined (ESP32_HelTex_WiFi_Kit_36pin)   // I am using this with the first GSM Thermostat project
-	#define SIGNAL_LED_PIN 25
-	#define RS232_PROTOCOL_PIN 23
-	#define DS18x20_pin1 21
-	#define EWDT_RESET_PIN 22
-  #define SIM800L_RX_PIN 16
-  #define SIM800L_TX_PIN 17
-	#define SIM800L_RESET_PIN 4
-  #define DOOR_CLOSE_PIN_ACTIVE_LOW 15
-  #define DOOR_CLOSE_PIN_ACTIVE_HIGH 19
-  #define DOOR_OPEN_PIN_ACTIVE_LOW 18
-  #define DOOR_OPEN_PIN_ACTIVE_HIGH 5
-  #define DOOR_CLOSED_SENSOR_PIN 12
-#endif
+#define SIGNAL_LED_PIN 2
+#define RS232_PROTOCOL_PIN 23
+#define DS18x20_pin1 33
+#define EWDT_RESET_PIN 22
+#define SIM800L_RX_PIN 16
+#define SIM800L_TX_PIN 17
+#define SIM800L_RESET_PIN 4
+#define DOOR_CLOSE_PIN_ACTIVE_LOW 15
+#define DOOR_CLOSE_PIN_ACTIVE_HIGH 19
+#define DOOR_OPEN_PIN_ACTIVE_LOW 18
+#define DOOR_OPEN_PIN_ACTIVE_HIGH 5
+#define DOOR_CLOSED_SENSOR_PIN 12
+
 
 // *****************************************************************************************
 // **************                 Serial logging control code                ***************

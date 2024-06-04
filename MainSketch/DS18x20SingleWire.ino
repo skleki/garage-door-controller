@@ -37,21 +37,27 @@ void DS18_StateMachine(int* state, int action, OneWire& ds, byte* addr, byte* ty
 inline void DS18x20_Init(bool loggingEnabled)
 {
   s0_temp.init(10, 10);
+#ifdef DS18x20_pin2
   s1_temp.init(10, 10);
+#endif
 }
 
 inline void DS18x20_Timer100ms_Handler()
 {
   DS18_StateMachine(&S0_State, DS18_A_100msTimer, ds0, s0_addr, &s0_type_s, s0_temp, 0, "Line 0: ");
+#ifdef DS18x20_pin2
   DS18_StateMachine(&S1_State, DS18_A_100msTimer, ds1, s1_addr, &s1_type_s, s1_temp, 1, "Line 1: ");
+#endif
 }
 
 inline void DS18x20_Timer1s_Handler()
 {
   DS18_StateMachine(&S0_State, DS18_A_1sTimer, ds0, s0_addr, &s0_type_s, s0_temp, 0, "Line 0: ");
-  DS18_StateMachine(&S1_State, DS18_A_1sTimer, ds1, s1_addr, &s1_type_s, s1_temp, 1, "Line 1: ");
   s0_temp.ExecuteOn1secondInterval();
+#ifdef DS18x20_pin2
+  DS18_StateMachine(&S1_State, DS18_A_1sTimer, ds1, s1_addr, &s1_type_s, s1_temp, 1, "Line 1: ");
   s1_temp.ExecuteOn1secondInterval();
+#endif
 
 
   static int cc;
@@ -59,25 +65,25 @@ inline void DS18x20_Timer1s_Handler()
   if (cc > 120)
   {
     cc = 0;
-    Serialprintln("");
+//    Serialprintln("");
 
     bool hasValue = s0_temp.hasValue();
     if (hasValue)
     {
       double temp = s0_temp.getValue();
-      Serialprint("Line 0 filtered temp: ");
-      Serialprintln(temp);
+//      Serialprint("Line 0 filtered temp: ");
+//      Serialprintln(temp);
     }
     
     hasValue = s1_temp.hasValue();
     if (hasValue)
     {
       double temp = s1_temp.getValue();
-      Serialprint("Line 1 filtered temp: ");
-      Serialprintln(temp);
+//      Serialprint("Line 1 filtered temp: ");
+//      Serialprintln(temp);
     }
 
-    Serialprintln("");
+//    Serialprintln("");
   }
 }
 
@@ -107,22 +113,22 @@ bool GetSensorAndSendReadCommand(OneWire& ds, byte* addr, byte* type_s, int inde
 //  Serialprint(logHeader);
 //  Serialprint("ROM =");
 //  for( i = 0; i < 8; i++) {
-//    Serialwrite(' ');
-//    Serialprint(addr[i], HEX);
+//    Serialprint(' ');
+//    Serialprint2A(addr[i], HEX);
 //  }
 
   if (OneWire::crc8(addr, 7) != addr[7]) {
-      Serialprint(logHeader);
-      Serialprintln("CRC is not valid!");
+//      Serialprint(logHeader);
+//      Serialprintln("CRC is not valid!");
       return false;
   }
-//  Serialprintln();
+  Serialprintln();
  
   // the first ROM byte indicates which chip
   switch (addr[0]) {
-    case 0x10:
+//    case 0x10:
 //      Serialprint(logHeader);
-//      Serialprintln("  Chip = DS18S20");  // or old DS1820
+      Serialprintln("  Chip = DS18S20");  // or old DS1820
       *type_s = 1;
       break;
     case 0x28:
@@ -136,8 +142,8 @@ bool GetSensorAndSendReadCommand(OneWire& ds, byte* addr, byte* type_s, int inde
       *type_s = 0;
       break;
     default:
-      Serialprint(logHeader);
-      Serialprintln("Device is not a DS18x20 family device.");
+//      Serialprint(logHeader);
+//      Serialprintln("Device is not a DS18x20 family device.");
       return false;
   } 
 
@@ -160,8 +166,8 @@ bool ReadTemp(OneWire& ds, byte* addr, byte* type_s, int index, String logHeader
 //  Serialprint(logHeader);
 //  Serialprint("reading temp for ROM=");
 //  for( i = 0; i < 8; i++) {
-//    Serialwrite(' ');
-//    Serialprint(addr[i], HEX);
+//    Serialprint(' ');
+//    Serialprint2A(addr[i], HEX);
 //  }
 //  Serialprintln("");
 
@@ -174,10 +180,10 @@ bool ReadTemp(OneWire& ds, byte* addr, byte* type_s, int index, String logHeader
 
 //  Serialprint(logHeader);
 //  Serialprint("  Data = ");
-//  Serialprint(present, HEX);
+//  Serialprint2A(present, HEX);
 //  Serialprint(" ");
 //  for ( i = 0; i < 9; i++) {           // we need 9 bytes
-//    Serialprint(data[i], HEX);
+//    Serialprint2A(data[i], HEX);
 //    Serialprint(" ");
 //  }
 
@@ -247,12 +253,12 @@ void DS18_StateMachine(int* state, int action, OneWire& ds, byte* addr, byte* ty
           {
             temp.add(celsius);
             // zabelezi temperaturu            
-            //            Serialprint("*** Sensor on line ");
-            //            Serialprint(index);
-            //            Serialprint(" with ROM: ");
-            //            Serialprint2A(addr[7], HEX);
-            //            Serialprint(" has Temperature: ");
-            //            Serialprintln(celsius);
+                        Serialprint("*** Sensor on line ");
+                        Serialprint(index);
+                        Serialprint(" with ROM: ");
+                        Serialprint2A(addr[7], HEX);
+                        Serialprint(" has Temperature: ");
+                        Serialprintln(celsius);
 
             *state = DS18_S0_GetAndSendCommand;
           }

@@ -163,7 +163,9 @@ void GsmLogic_1sHandler(void)
     struct SmsForSending resetSms;
     resetSms.receiverNumber = ADMIN_NUMBER;
     resetSms.smsContent = "RESET OCCURED\r\n" + GsmLogic_StatusReport();
-    PushSmsIntoSendingQueue(&resetSms);
+    
+    // TODO: uncoment this for production
+    // PushSmsIntoSendingQueue(&resetSms);
   }
 }
 
