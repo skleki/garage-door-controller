@@ -10,6 +10,7 @@
 #define GSM_MODEM
 #define ENABLE_WDT
 #define UNO_BOARD_LEDS
+#define ENABLE_EWDT
 
 
 #define SIGNAL_LED_PIN 2
@@ -61,15 +62,31 @@ extern void Signal_LEDs_Initialise();
 extern void Timer1_Initialize();
 extern bool UnoCameOutOfReset(unsigned char code);
 extern void Timer1MailLoop(void);
+extern void EWDT_1msHandler(void);
+extern void EWDT_1sHandler(void);
+extern void EWDT_Initialise(void);
+extern void WDT_Initialise(void);
+extern void WDT_Reset(void);
+extern void DoorControl_Initialise(void);
+extern void DoorControl_Loop(void);
+extern void DoorControl_1msHandler(void);
+extern void DoorControl_10msHandler(void);
+extern void DoorControl_1000msHandler(void);
 extern void Signal_LEDs_10msHandler(void);
 extern inline void DS18x20_Init(bool loggingEnabled);
 extern inline void DS18x20_Timer1s_Handler();
+extern void GsmLogic_Initialise(void);
+extern void GsmLogic_loop(void);
+extern void GsmLogic_100msHandler(void);
+extern void GsmLogic_1sHandler(void);
 
 
 // *****************************************************************************************
 // ******************          S E T U P        ********************************************
 void setup() 
 {
+  EWDT_Initialise();
+  
   pinMode(RS232_PROTOCOL_PIN, INPUT_PULLUP);
   delay(50);
   
@@ -96,13 +113,13 @@ void setup()
 // ****************           M A I N    L O O P         ***********************************
 void loop() 
 {
-	WDT_Reset();
-	yield();
-	Timer1MailLoop();
-	yield();
+  WDT_Reset();
+  yield();
+  Timer1MailLoop();
+  yield();
 
-	GsmLogic_loop();
-	yield();
+  GsmLogic_loop();
+  yield();
   DoorControl_Loop();
   yield();
 }
@@ -121,18 +138,20 @@ inline void Timer1_1msHandler(void)
 
 inline void Timer1_10msHandler(void)
 {
+  EWDT_1msHandler();
   Signal_LEDs_10msHandler();
+  DoorControl_10msHandler();
 }
 
 inline void Timer1_100msHandler(void)
 {
   DS18x20_Timer100ms_Handler();
   GsmLogic_100msHandler();
-  DoorControl_100msHandler();
 }
 
 inline void Timer1_1000msHandler(void)
 {
+  EWDT_1sHandler();
   DS18x20_Timer1s_Handler();
   GsmLogic_1sHandler();
   DoorControl_1000msHandler();

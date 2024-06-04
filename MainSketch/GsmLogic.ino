@@ -3,7 +3,7 @@
 #include "cppQueue.h"
 
 #define GSM_TIME_ZONE 1
-#define GCM_CREDIT_WARNING_LIMIT 300.0
+#define GCM_CREDIT_WARNING_LIMIT 100.0
 
 #define ADMIN_NUMBER "+381642023960"
 #define REGISTRED_NUMBERS_COUNT 2
@@ -165,7 +165,7 @@ void GsmLogic_1sHandler(void)
     resetSms.smsContent = "RESET OCCURED\r\n" + GsmLogic_StatusReport();
     
     // TODO: uncoment this for production
-    // PushSmsIntoSendingQueue(&resetSms);
+    PushSmsIntoSendingQueue(&resetSms);
   }
 }
 
@@ -247,6 +247,7 @@ void ReceivedSmsNotificationFunction(String callerNumber, struct tm smsTime, Str
     struct SmsForSending smsReceivedNotificationToAdmin;
     smsReceivedNotificationToAdmin.receiverNumber = ADMIN_NUMBER;
     smsReceivedNotificationToAdmin.smsContent = "SMS from unregisterd: " + callerNumber + ", content:[" + smsContent +"]";
+    // TODO: Uncoment this for production
     PushSmsIntoSendingQueue(&smsReceivedNotificationToAdmin);
   }
 
@@ -642,35 +643,28 @@ String GsmLogic_CorrectCommandFormat()
 {
   return "Invalid SMS, Correct command format: \r\n" \
         "status\r\n" \
-        "open\r\n" \
-        "close\r\n" \
-        "sendsms";
+        "open,<authorized_no>\r\n" \
+        "close,<authorized_no>\r\n" \
+        "sendsms,<receiver_no>,<sms_content>";
 }
 
 const String GsmLogic_StatusTemplate = 
   "Current status:\r\n"\
   "Door: %DOOR_OPENED_CLOSED%\r\n"\
-  "Current temp 1: %CURRENT_TEMP_SENSOR_1% C\r\n"\
-  "Current temp 2: %CURRENT_TEMP_SENSOR_2% C\r\n"\
-  "Current temp 3: %CURRENT_TEMP_SENSOR_3%";
+  "Current temp: %CURRENT_TEMP_SENSOR% C\r\n"\
+  "Credit: %GSM_CREDIT% rsd";
+
+extern inline String GetTempAsString();
 
 String GsmLogic_StatusReport()
 {
   String smsContent = GsmLogic_StatusTemplate;
 
-//  smsContent.replace(WIFI_STATUS_FIELD_0, WiFiStatusPart0());
-//  smsContent.replace(WIFI_STATUS_FIELD_1, WiFiStatusPart1());
-//  smsContent.replace(HEATING_FIELD, (hcManualEnabled || hcAutoEnabled) ? "ENABLED" : "DISABLED");
+  smsContent.replace("%DOOR_OPENED_CLOSED%", DoorControl_IsDoorClosed() ? "CLOSED" : "OPENED");
+  smsContent.replace("%CURRENT_TEMP_SENSOR%", GetTempAsString());
+  smsContent.replace("%GSM_CREDIT%", String(GsmCurrentCredit));
 
   return smsContent;
-}
-
-void GsmLogic_ParseStatusCommand(String& callerNumber, struct tm& smsTime, String& smsContent)
-{
-  struct SmsForSending smsToAdmin;
-  smsToAdmin.receiverNumber = callerNumber;
-  smsToAdmin.smsContent = GsmLogic_StatusReport();
-  PushSmsIntoSendingQueue(&smsToAdmin);
 }
 
 void GsmLogic_ParseSendSmsCommand(String& callerNumber, struct tm& smsTime, String& smsContent)
@@ -700,6 +694,69 @@ void GsmLogic_ParseResetModuleCommandCommand(String& callerNumber, struct tm& sm
   // ESP32 will restart in 16 seconds on WDT reset
 }
 
+
+void GsmLogic_ParseStatusCommand(String& callerNumber, struct tm& smsTime, String& smsContent)
+{
+  struct SmsForSending smsToAdmin;
+  smsToAdmin.receiverNumber = callerNumber;
+  smsToAdmin.smsContent = GsmLogic_StatusReport();
+  PushSmsIntoSendingQueue(&smsToAdmin);
+}
+
+void GsmLogic_ParseOpenCommand(String& callerNumber, struct tm& smsTime, String& smsContent)
+{
+  int firstCommaIndex = smsContent.indexOf(',');
+  if (firstCommaIndex == -1)
+  {
+    struct SmsForSending smsToAdmin;
+    smsToAdmin.receiverNumber = callerNumber;
+    smsToAdmin.smsContent = GsmLogic_CorrectCommandFormat();
+    PushSmsIntoSendingQueue(&smsToAdmin);
+    return;
+  }
+
+  String commandSecondParameter = smsContent.substring(firstCommaIndex + 1);
+  if(GsmLogic_IsSmsSenderAuthorized(commandSecondParameter))
+  {
+    DoorControl_Open();
+  }
+  else
+  {
+    Serialprint("Received DOOR OPEN command:[");
+    Serialprint(smsContent);
+    Serialprint("] but the number:[");
+    Serialprint(commandSecondParameter);
+    Serialprintln("] is not authorised!");
+  }
+}
+
+void GsmLogic_ParseCloseCommand(String& callerNumber, struct tm& smsTime, String& smsContent)
+{
+  int firstCommaIndex = smsContent.indexOf(',');
+  if (firstCommaIndex == -1)
+  {
+    struct SmsForSending smsToAdmin;
+    smsToAdmin.receiverNumber = callerNumber;
+    smsToAdmin.smsContent = GsmLogic_CorrectCommandFormat();
+    PushSmsIntoSendingQueue(&smsToAdmin);
+    return;
+  }
+
+  String commandSecondParameter = smsContent.substring(firstCommaIndex + 1);
+  if(GsmLogic_IsSmsSenderAuthorized(commandSecondParameter))
+  {
+    DoorControl_Close();
+  }
+  else
+  {
+    Serialprint("Received DOOR CLOSE command:[");
+    Serialprint(smsContent);
+    Serialprint("] but the number:[");
+    Serialprint(commandSecondParameter);
+    Serialprintln("] is not authorised!");
+  }
+}
+
 void GsmLogic_ParseSms(String& callerNumber, struct tm& smsTime, String& smsContent)
 {
   int firstCommaIndex = smsContent.indexOf(',');
@@ -711,11 +768,11 @@ void GsmLogic_ParseSms(String& callerNumber, struct tm& smsTime, String& smsCont
   }
   else if (command == COMMAND_OPEN)
   {
-    //GsmLogic_ParseManualOnCommand(callerNumber, smsTime, smsContent);
+    GsmLogic_ParseOpenCommand(callerNumber, smsTime, smsContent);
   }
   else if (command == COMMAND_CLOSE)
   {
-    //GsmLogic_ParseManualOffCommand(callerNumber, smsTime, smsContent);
+    GsmLogic_ParseCloseCommand(callerNumber, smsTime, smsContent);
   }
   else if (command == COMMAND_SEND_SMS)
   {

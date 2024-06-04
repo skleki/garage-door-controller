@@ -90,6 +90,20 @@ inline void DS18x20_Timer1s_Handler()
 
 
 
+inline String GetTempAsString()
+{
+  bool hasValue = s0_temp.hasValue();
+  if (hasValue)
+  {
+    double temp = s0_temp.getValue();
+    return String(temp);
+  }
+  else
+  {
+    return "unavailable";
+  }
+}
+
 
 
 
@@ -253,12 +267,12 @@ void DS18_StateMachine(int* state, int action, OneWire& ds, byte* addr, byte* ty
           {
             temp.add(celsius);
             // zabelezi temperaturu            
-                        Serialprint("*** Sensor on line ");
-                        Serialprint(index);
-                        Serialprint(" with ROM: ");
-                        Serialprint2A(addr[7], HEX);
-                        Serialprint(" has Temperature: ");
-                        Serialprintln(celsius);
+//            Serialprint("*** Sensor on line ");
+//            Serialprint(index);
+//            Serialprint(" with ROM: ");
+//            Serialprint2A(addr[7], HEX);
+//            Serialprint(" has Temperature: ");
+//            Serialprintln(celsius);
 
             *state = DS18_S0_GetAndSendCommand;
           }
