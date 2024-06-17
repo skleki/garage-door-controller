@@ -11,6 +11,10 @@ const String REGISTRED_NUMBERS[REGISTRED_NUMBERS_COUNT] = {
     "+381642023960",
     "+381642042030"};
 
+#define IGNORED_NUMBERS_COUNT 1
+const String IGNORED_NUMBERS[IGNORED_NUMBERS_COUNT] = {
+    "130303"};
+
 #define SEND_LOW_CREDIT_NOTIFICATION_NUMBER 5
 
 //// For test, smaller values
@@ -241,6 +245,11 @@ void ReceivedSmsNotificationFunction(String callerNumber, struct tm smsTime, Str
   if (GsmLogic_IsSmsSenderAuthorized(callerNumber))
   {
     GsmLogic_ParseSms(callerNumber, smsTime, smsContent);
+  }
+  else if (GsmLogic_IsSmsSenderIgnored(callerNumber))
+  {
+    Serialprint("###########   SMS from ignored number: ");
+    Serialprintln(callerNumber);
   }
   else
   {
@@ -622,6 +631,28 @@ bool GsmLogic_IsSmsSenderAuthorized(String callerNumber)
   }
   return false;
 }
+
+bool GsmLogic_IsSmsSenderIgnored(String callerNumber)
+{
+  for (int i = 0; i < IGNORED_NUMBERS_COUNT; i++)
+  {
+    if (IGNORED_NUMBERS[i] == callerNumber)
+    {
+      return true;
+    }
+  }
+  if(callerNumber.indexOf("w") != -1)
+  {
+    return true;
+  }
+  if(callerNumber.indexOf("@") != -1)
+  {
+    return true;
+  }
+  
+  return false;
+}
+
 
 
 #define COMMAND_STATUS "STATUS"

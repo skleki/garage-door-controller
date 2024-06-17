@@ -4,10 +4,14 @@
 
 #ifdef UNO_BOARD_LEDS
 
+//  const byte LEDS_COMMS_ACTIVE_SEQ_LEN = 2;
+//  const unsigned int LEDS_COMMS_ACTIVE_SEQ[] = { 2900, 100 };
+//  const byte LEDS_COMMS_LOST_SEQ_LEN = 4;
+//  const unsigned int LEDS_COMMS_LOST_SEQ[] = { 50, 200, 50, 4700 };
   const byte LEDS_COMMS_ACTIVE_SEQ_LEN = 2;
-  const unsigned int LEDS_COMMS_ACTIVE_SEQ[] = { 2900, 100 };
-  const byte LEDS_COMMS_LOST_SEQ_LEN = 4;
-  const unsigned int LEDS_COMMS_LOST_SEQ[] = { 50, 200, 50, 4700 };
+  const unsigned int LEDS_COMMS_ACTIVE_SEQ[] = { 900, 100 };
+  const byte LEDS_COMMS_LOST_SEQ_LEN = 2;
+  const unsigned int LEDS_COMMS_LOST_SEQ[] = { 900, 100 };
 
   unsigned int *LedCommsSeq;
   byte LedCommsSeqLen;
