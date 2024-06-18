@@ -268,6 +268,10 @@ void ReceivedRingNotificationFunction(String callerNumber)
   Serialprint("###########   RING number: ");
   Serialprintln(callerNumber);
   SendHangupCallCommand();
+  if (GsmLogic_IsSmsSenderAuthorized(callerNumber))
+  {
+    // TODO: smisli neku logiku ako pozove autorizivani broj
+  }
 }
 
 void ReceivedOperatorCreditFunction(float credit)

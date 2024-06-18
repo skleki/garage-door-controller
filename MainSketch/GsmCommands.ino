@@ -16,7 +16,7 @@ String NOCARRIER_RESPONSE = "\r\nNO CARRIER\r\n";
 
 String GET_OPERATOR_CREDIT_COMMAND ="AT+CUSD=1,\"*100#\"\r";
 
-int INIT_COMMANDS_LENGTH = 7;
+int INIT_COMMANDS_LENGTH = 8;
 String INIT_COMMANDS[] = {
 "AT\r",
 "AT+CMEE=2\r",
@@ -24,6 +24,7 @@ String INIT_COMMANDS[] = {
 "AT+CMGF=1\r",
 "AT+CPMS=\"SM\",\"SM\",\"SM\"\r",
 "AT+CMGD=1,4\r",
+"AT+CLIP=1\r",
 "AT&W\r"
 };
 int GsmCommandsCurrentInitCommandIndex;
